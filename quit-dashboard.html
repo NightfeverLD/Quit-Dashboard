@@ -1,0 +1,890 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12141F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Runway">
+<title>Runway</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2312141F'/%3E%3Cpath d='M14 44h36M14 34h24M14 24h30' stroke='%23F2A93B' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#12141F; --panel:#1A1D2E; --panel2:#232742; --line:#2E3350;
+  --text:#E9EBF5; --dim:#8A90AE;
+  --gold:#F2A93B; --mint:#4FD1A0; --smoke:#6E7796; --violet:#8B7BE8;
+  --disp:'Chakra Petch',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:var(--body);font-size:16px;min-height:100%}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button{font:inherit;background:none;border:none;color:var(--text);cursor:pointer;padding:0}
+input,textarea{font:inherit;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:12px 13px;width:100%}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+::selection{background:var(--gold);color:var(--bg)}
+
+#app{max-width:460px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px 108px}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ---- HUD header ---- */
+.hud{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:16px 16px 14px;margin-bottom:14px;position:relative;overflow:hidden}
+.hud-top{display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--disp);font-size:12.5px;letter-spacing:.08em;color:var(--dim)}
+.hud-top b{color:var(--gold);font-weight:600}
+.since{font-family:var(--disp);font-weight:700;font-size:44px;line-height:1.05;
+  letter-spacing:-.02em;margin:10px 0 2px;font-variant-numeric:tabular-nums}
+.since small{font-size:15px;font-weight:500;color:var(--dim);letter-spacing:0}
+.since-label{font-size:12.5px;color:var(--dim);margin-bottom:14px}
+.xp{height:7px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.xp i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#FFD08A);
+  border-radius:4px;transition:width .4s ease}
+.xp-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);
+  margin-top:7px;font-family:var(--disp);letter-spacing:.05em}
+
+/* ---- actions ---- */
+.acts{display:grid;gap:9px;margin-bottom:16px}
+button.act{border-radius:14px;padding:17px 18px;text-align:left;display:flex;
+  align-items:center;gap:14px;border:1px solid transparent;transition:transform .08s ease}
+button.act:active{transform:scale(.985)}
+button.act .ic{width:34px;height:34px;flex:none;display:grid;place-items:center;
+  border-radius:10px;font-size:17px}
+button.act .tx{flex:1;min-width:0}
+button.act .tx b{display:block;font-family:var(--disp);font-weight:600;font-size:17px;
+  letter-spacing:.005em}
+button.act .tx span{display:block;font-size:12.5px;margin-top:2px;opacity:.72}
+button.act.a-break{background:var(--panel2);border-color:#3A4068;color:var(--text)}
+button.act.a-break .ic{background:rgba(139,123,232,.18);color:var(--violet)}
+button.act.a-crave{background:var(--panel);border-color:var(--line);color:var(--text)}
+button.act.a-crave .ic{background:rgba(242,169,59,.15);color:var(--gold)}
+button.act.a-smoke{background:transparent;border:1px dashed var(--line);color:var(--dim);
+  padding:14px 18px}
+button.act.a-smoke .ic{background:rgba(110,119,150,.16);color:var(--smoke);width:30px;height:30px;font-size:15px}
+button.act.a-smoke .tx b{font-size:15px;color:var(--text)}
+
+/* ---- stat strip ---- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.stat b{display:block;font-family:var(--disp);font-weight:700;font-size:21px;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat small{font-size:11px;color:var(--dim)}
+.stat.warn b{color:var(--gold)}
+
+/* ---- generic panel ---- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:13px 14px;margin-bottom:16px}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.prow+.prow{margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.prow .lbl{font-size:14px}
+.prow .lbl small{display:block;font-size:11.5px;color:var(--dim);margin-top:2px}
+button.tog{border:1px solid var(--line);border-radius:999px;padding:7px 15px;
+  font-size:13px;color:var(--dim);white-space:nowrap}
+button.tog[data-on="1"]{background:var(--mint);border-color:var(--mint);color:#0C2B20;font-weight:600}
+.stepper{display:flex;align-items:center;gap:9px}
+.stepper button{border:1px solid var(--line);width:34px;height:34px;border-radius:9px;
+  font-size:18px;line-height:1;color:var(--text)}
+.stepper b{font-family:var(--disp);font-size:17px;min-width:16px;text-align:center}
+
+h4.sec{font-family:var(--disp);font-size:12px;letter-spacing:.1em;color:var(--dim);
+  font-weight:600;margin:22px 0 11px}
+h4.sec:first-child{margin-top:4px}
+
+/* ---- taper ---- */
+.weeks{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.wk{border:1px solid var(--line);border-radius:10px;padding:9px 3px;text-align:center;
+  background:var(--panel)}
+.wk[data-on="1"]{border-color:var(--gold);background:rgba(242,169,59,.09)}
+.wk b{display:block;font-family:var(--disp);font-weight:700;font-size:17px}
+.wk small{font-size:10px;color:var(--dim)}
+
+/* ---- timeline ---- */
+.thread{display:grid;gap:3px}
+.trow{display:grid;grid-template-columns:26px 1fr;align-items:center;gap:8px}
+.trow span.h{font-size:10.5px;color:var(--dim);font-family:var(--disp)}
+.track{position:relative;height:19px;border-bottom:1px solid var(--line)}
+.mk{position:absolute;transform:translateX(-50%)}
+.mk.s{top:6px;width:9px;height:9px;border-radius:50%;background:var(--smoke)}
+.mk.b{top:5px;width:10px;height:10px;border-radius:3px;background:var(--violet)}
+.mk.r{top:2px;width:3px;height:15px;border-radius:2px;background:var(--mint)}
+
+.empty{border:1px dashed var(--line);border-radius:12px;padding:16px;font-size:13.5px;
+  color:var(--dim);line-height:1.5}
+
+/* ---- tag row ---- */
+.tagbar{background:var(--panel2);border:1px solid var(--line);border-radius:13px;
+  padding:12px 13px;margin-bottom:16px}
+.tagbar .th{display:flex;justify-content:space-between;align-items:center;
+  font-size:12.5px;color:var(--dim);margin-bottom:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button.chip{border:1px solid var(--line);border-radius:999px;padding:8px 13px;
+  font-size:13px;color:var(--text);background:var(--panel)}
+button.chip[data-on="1"]{background:var(--gold);border-color:var(--gold);color:#241703;font-weight:600}
+button.chip.sm{padding:6px 11px;font-size:12px}
+button.link{color:var(--dim);font-size:12.5px;text-decoration:underline}
+
+/* ---- bars ---- */
+.bar{display:grid;grid-template-columns:118px 1fr 30px;align-items:center;gap:8px;
+  margin-bottom:6px;font-size:13px}
+.bar i{display:block;height:15px;border-radius:3px;background:var(--smoke)}
+.bar i.sw{height:9px;background:var(--violet)}
+.bar u{text-decoration:none;color:var(--dim);font-size:12px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.hrs{display:flex;align-items:flex-end;gap:2px;height:70px;margin-bottom:6px}
+.hrs div{flex:1;background:var(--smoke);border-radius:2px 2px 0 0;min-height:2px}
+.hlab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);
+  font-family:var(--disp)}
+
+/* ---- log rows ---- */
+.lrow{display:flex;justify-content:space-between;gap:10px;padding:11px 0;
+  border-bottom:1px solid var(--line);font-size:14px;align-items:flex-start}
+.lrow .dot{display:inline-block;width:8px;height:8px;margin-right:9px;flex:none}
+.lrow time{color:var(--dim);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ---- tabs ---- */
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(18,20,31,.94);
+  backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);z-index:15}
+nav button{flex:1;padding:13px 0 15px;font-family:var(--disp);font-size:11.5px;
+  letter-spacing:.08em;color:var(--dim)}
+nav button[data-on="1"]{color:var(--gold);box-shadow:inset 0 2px 0 var(--gold)}
+
+/* ---- overlays ---- */
+.veil{position:fixed;inset:0;background:rgba(8,9,15,.72);z-index:30;display:flex;
+  align-items:flex-end;justify-content:center;padding:0}
+.sheet{background:var(--panel);width:100%;max-width:460px;border-radius:20px 20px 0 0;
+  border:1px solid var(--line);border-bottom:none;padding:20px 16px calc(24px + env(safe-area-inset-bottom));
+  max-height:90vh;overflow-y:auto}
+.sheet h3{font-family:var(--disp);font-size:19px;font-weight:600;margin:0 0 4px}
+.sheet p.sub{font-size:13px;color:var(--dim);margin:0 0 16px;line-height:1.45}
+button.go{width:100%;border-radius:12px;background:var(--gold);color:#241703;
+  padding:16px;font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:.02em}
+button.go.ghost{background:transparent;border:1px solid var(--line);color:var(--text);
+  font-weight:600;margin-top:9px}
+button.quiet{width:100%;padding:13px 0 0;font-size:13px;color:var(--dim);text-decoration:underline}
+
+.card{border:1px solid var(--violet);border-radius:16px;
+  background:linear-gradient(160deg,rgba(139,123,232,.16),rgba(139,123,232,.04));
+  padding:22px 20px;margin-bottom:16px}
+.card small{font-family:var(--disp);font-size:11px;letter-spacing:.12em;color:var(--violet);
+  font-weight:600}
+.card b{display:block;font-size:20px;font-weight:500;line-height:1.35;margin-top:9px}
+
+/* ---- craving overlay ---- */
+.crave{position:fixed;inset:0;background:var(--bg);z-index:40;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center}
+.crave .ring{position:relative}
+.crave .num{position:absolute;inset:0;display:grid;place-items:center;
+  font-family:var(--disp);font-weight:700;font-size:42px;font-variant-numeric:tabular-nums}
+.crave p{max-width:300px;font-size:14px;color:var(--dim);line-height:1.55;margin:22px 0 24px}
+.crave .btns{width:100%;max-width:300px}
+circle.prog{transition:stroke-dashoffset 1s linear}
+@media (prefers-reduced-motion:reduce){circle.prog,.xp i{transition:none}}
+
+/* ---- sticky craving banner ---- */
+.banner{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));
+  z-index:16;display:flex;justify-content:center;padding:0 16px}
+.banner button{max-width:460px;width:100%;background:var(--gold);color:#241703;
+  border-radius:12px;padding:12px 15px;display:flex;justify-content:space-between;
+  align-items:center;font-family:var(--disp);font-weight:700;font-size:14px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));
+  background:var(--mint);color:#0C2B20;font-family:var(--disp);font-weight:700;font-size:14px;
+  padding:10px 18px;border-radius:999px;z-index:50;pointer-events:none;
+  animation:pop 1.6s ease forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,8px)}12%{opacity:1;transform:translate(-50%,0)}
+  75%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none;opacity:1}}
+
+.note{font-size:12px;color:var(--dim);line-height:1.6;margin-top:18px}
+.erow{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--line);padding:11px 0;font-size:14px}
+.erow button{color:var(--dim);font-size:19px;line-height:1;padding:0 5px}
+.addrow{display:flex;gap:8px;margin-top:12px}
+.addrow input{flex:1;min-width:0}
+.addrow button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:0 17px;font-size:14px;font-weight:600}
+textarea{min-height:110px;font-size:12px;font-family:ui-monospace,Menlo,monospace;resize:vertical}
+</style>
+
+<div id="app"></div>
+<nav id="nav"></nav>
+<div id="over"></div>
+
+<script>
+"use strict";
+
+/* =================================================================== */
+/*  Data                                                               */
+/* =================================================================== */
+
+const KEY = "quitgame:v2";
+
+const DEFAULT_TRIGGERS = [
+  "Waiting on something","Blocked","Deadline pressure","Meeting ended",
+  "Context switch","Coffee","After a meal","First of the day","Boredom",
+  "Someone else lit one","Alcohol / social","Just habit"
+];
+
+const CHALLENGES = [
+  {id:"g1",deck:"guitar",mins:2,place:"desk",text:"Two minutes of clean transitions between the two chords you always fumble."},
+  {id:"g2",deck:"guitar",mins:5,place:"desk",text:"Play a scale you avoid, ascending in thirds."},
+  {id:"g3",deck:"guitar",mins:5,place:"desk",text:"Work out the first four bars of something by ear. No tab."},
+  {id:"g4",deck:"guitar",mins:5,place:"desk",text:"A progression in a key you never write in."},
+  {id:"g5",deck:"guitar",mins:15,place:"desk",text:"Build an eight-bar riff around one interval you find ugly."},
+  {id:"g6",deck:"guitar",mins:15,place:"desk",text:"Learn the part you've been avoiding because the stretch is awkward."},
+
+  {id:"d1",deck:"draw",mins:2,place:"desk",text:"Sixty-second gesture of whatever is in front of you."},
+  {id:"d2",deck:"draw",mins:2,place:"desk",text:"Blind contour of the nearest object. Don't look at the page."},
+  {id:"d3",deck:"draw",mins:5,place:"desk",text:"Draw your own hand — with the hand you don't draw with."},
+  {id:"d4",deck:"draw",mins:5,place:"desk",text:"One object, three line weights, nothing else."},
+  {id:"d5",deck:"draw",mins:5,place:"desk",text:"Draw the negative space around the object, not the object."},
+  {id:"d6",deck:"draw",mins:5,place:"desk",text:"Five thumbnail compositions of the view out the nearest window."},
+  {id:"d7",deck:"draw",mins:15,place:"desk",text:"Fill one small square with a smooth value gradient. No blending tools."},
+  {id:"d8",deck:"draw",mins:15,place:"desk",text:"Redraw something you drew badly last month."},
+
+  {id:"p1",deck:"paint",mins:15,place:"home",text:"Mix a colour you can see in the room. Exactly. Three attempts."},
+  {id:"p2",deck:"paint",mins:30,place:"home",text:"Fifteen-minute value study. Three values only."},
+  {id:"p3",deck:"paint",mins:30,place:"home",text:"Paint anything — three colours plus white."},
+  {id:"p4",deck:"paint",mins:30,place:"home",text:"Small study from life. No reference photo, no undo."},
+
+  {id:"h1",deck:"home",mins:5,place:"home",text:"Clear one shelf. Just one."},
+  {id:"h2",deck:"home",mins:5,place:"home",text:"Fold whatever is on the chair."},
+  {id:"h3",deck:"home",mins:5,place:"home",text:"Wipe down one section of counter."},
+  {id:"h4",deck:"home",mins:5,place:"home",text:"Empty the dishwasher."},
+  {id:"h5",deck:"home",mins:5,place:"home",text:"Find homes for five things that don't have one."},
+  {id:"h6",deck:"home",mins:2,place:"home",text:"Water the plants."},
+  {id:"h7",deck:"home",mins:5,place:"home",text:"Take out the recycling."},
+  {id:"h8",deck:"home",mins:15,place:"home",text:"One drawer, fully sorted."},
+
+  {id:"r1",deck:"reset",mins:2,place:"desk",text:"Walk to the furthest window. Look at something far away."},
+  {id:"r2",deck:"reset",mins:2,place:"desk",text:"Ten slow breaths, out for longer than in."},
+  {id:"r3",deck:"reset",mins:2,place:"desk",text:"One flight of stairs, twice."},
+  {id:"r4",deck:"reset",mins:2,place:"desk",text:"Refill your water. Drink it standing, away from the screen."},
+  {id:"r5",deck:"reset",mins:5,place:"desk",text:"Outside — same route as the smoke break, different endpoint."}
+];
+
+const DECKS = {guitar:"Guitar",draw:"Drawing",paint:"Painting",home:"Around the house",reset:"Reset"};
+
+const BLANK = {
+  v:2, setup:false, startDate:null,
+  pricePerPack:12, cigsPerPack:20, currency:"€", goal:"",
+  baseline:10, triggers:DEFAULT_TRIGGERS.slice(),
+  patchOn:true, patchStrength:"", patchDays:{}, fastActing:{},
+  decks:{guitar:true,draw:true,paint:true,home:true,reset:true},
+  customChallenges:[], recent:[], entries:[], craving:null
+};
+
+/* ---- storage: Claude's store if present, browser storage when self-hosted ---- */
+const store = {
+  async get(){
+    if (window.storage) {
+      try { const r = await window.storage.get(KEY); if (r && r.value) return JSON.parse(r.value); } catch(e){}
+    }
+    try { const v = window.localStorage.getItem(KEY); if (v) return JSON.parse(v); } catch(e){}
+    return null;
+  },
+  async set(s){
+    if (window.storage) {
+      try { await window.storage.set(KEY, JSON.stringify(s)); return true; } catch(e){}
+    }
+    try { window.localStorage.setItem(KEY, JSON.stringify(s)); return true; } catch(e){ return false; }
+  }
+};
+
+let S = null;
+let tab = "today";
+let over = null;      // {kind:'break'|'settingsChip', ...}
+let toastMsg = null;
+
+function save(){ store.set(S); }
+
+/* =================================================================== */
+/*  Helpers                                                            */
+/* =================================================================== */
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const dayKey = (ts) => { const d = new Date(ts);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const parseDay = (k) => { const p = k.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); };
+const daysBetween = (a,b) => Math.round((parseDay(b)-parseDay(a))/86400000);
+
+const QUIT_DAY = 28, STEPS = [0.8,0.55,0.3,0.1], XP_PER_LEVEL = 400;
+
+function allowanceFor(dayIndex, baseline){
+  if(!baseline) return null;
+  if(dayIndex >= QUIT_DAY) return 0;
+  return Math.max(1, Math.ceil(baseline * STEPS[Math.min(Math.floor(dayIndex/7), 3)]));
+}
+
+function stats(){
+  const today = dayKey(Date.now());
+  const start = S.startDate || today;
+  const dayIndex = Math.max(0, daysBetween(start, today));
+  const baseline = S.baseline;
+
+  const byDay = {};
+  S.entries.forEach(e => {
+    const k = dayKey(e.ts);
+    if(!byDay[k]) byDay[k] = {smoke:0,resisted:0,break:0};
+    byDay[k][e.type] = (byDay[k][e.type]||0) + 1;
+  });
+
+  const allowance = allowanceFor(dayIndex, baseline);
+  const smokes = S.entries.filter(e=>e.type==="smoke").length;
+  const resisted = S.entries.filter(e=>e.type==="resisted").length;
+  const breaks = S.entries.filter(e=>e.type==="break").length;
+  const withCh = S.entries.filter(e=>e.type==="break" && e.challenge).length;
+
+  let underBonus = 0, cigsSaved = 0;
+  Object.keys(byDay).forEach(k => {
+    if(k === today) return;
+    const a = allowanceFor(daysBetween(start,k), baseline);
+    if(a != null) underBonus += Math.max(0, a - byDay[k].smoke) * 10;
+    if(baseline) cigsSaved += Math.max(0, baseline - byDay[k].smoke);
+  });
+
+  const patchCount = Object.keys(S.patchDays).filter(k=>S.patchDays[k]).length;
+  const loggedDays = Object.keys(byDay).length;
+  const mult = Math.min(2, 1 + loggedDays*0.05);
+  const points = Math.round((smokes*5 + resisted*50 + breaks*30 + withCh*15 + patchCount*15 + underBonus) * mult);
+
+  const trig = {}, swap = {}, hours = new Array(24).fill(0);
+  S.entries.forEach(e => {
+    const t = e.trigger || "Untagged";
+    if(e.type === "smoke"){ trig[t] = (trig[t]||0)+1; hours[new Date(e.ts).getHours()]++; }
+    else swap[t] = (swap[t]||0)+1;
+  });
+
+  const lastSmoke = S.entries.filter(e=>e.type==="smoke")
+    .reduce((m,e)=>Math.max(m,e.ts), 0);
+
+  const quitDate = parseDay(start); quitDate.setDate(quitDate.getDate()+QUIT_DAY);
+
+  return {
+    today, dayIndex, allowance, baseline,
+    todaySmoked: byDay[today] ? byDay[today].smoke : 0,
+    todayBreaks: byDay[today] ? byDay[today].break : 0,
+    todayResisted: byDay[today] ? byDay[today].resisted : 0,
+    smokes, resisted, breaks, points, mult, loggedDays, patchCount, lastSmoke,
+    money: cigsSaved * (S.pricePerPack / Math.max(1, S.cigsPerPack)),
+    trig, swap, hours, quitDate,
+    level: 1 + Math.floor(points / XP_PER_LEVEL),
+    intoLevel: points % XP_PER_LEVEL,
+    todayEntries: S.entries.filter(e=>dayKey(e.ts)===today).sort((a,b)=>a.ts-b.ts)
+  };
+}
+
+/* triggers, most-used first — fewer taps for the ones you actually use */
+function sortedTriggers(){
+  const use = {};
+  S.entries.forEach(e => { if(e.trigger) use[e.trigger] = (use[e.trigger]||0)+1; });
+  return S.triggers.slice().sort((a,b) => (use[b]||0) - (use[a]||0));
+}
+
+function pool(mins, place){
+  return CHALLENGES.concat(S.customChallenges).filter(c =>
+    S.decks[c.deck] !== false && c.mins <= mins && (place === "home" || c.place === "desk"));
+}
+function deal(mins, place, avoid){
+  const p = pool(mins, place);
+  if(!p.length) return null;
+  const fresh = p.filter(c => !avoid.includes(c.id));
+  const from = fresh.length ? fresh : p;
+  return from[Math.floor(Math.random()*from.length)];
+}
+
+function toast(msg){
+  toastMsg = msg;
+  render();
+  setTimeout(()=>{ toastMsg = null; render(); }, 1700);
+}
+
+function addEntry(type, opts){
+  opts = opts || {};
+  const e = { id: String(Date.now())+Math.random().toString(36).slice(2,6),
+    ts: Date.now(), type, trigger: opts.trigger || null,
+    craving: opts.craving || null, challenge: opts.challenge || null };
+  S.entries.push(e);
+  if(opts.challenge) S.recent = [opts.challenge].concat(S.recent).slice(0,8);
+  S.lastId = e.id;
+  save();
+  return e;
+}
+
+function fmtSince(ms){
+  if(ms == null) return {n:"—", u:""};
+  const m = Math.floor(ms/60000);
+  if(m < 60) return {n:String(m), u:"min"};
+  const h = Math.floor(m/60);
+  if(h < 24) return {n:h+"h "+String(m%60).padStart(2,"0"), u:"min"};
+  return {n:String(Math.floor(h/24))+"d "+(h%24), u:"h"};
+}
+
+/* =================================================================== */
+/*  Views                                                              */
+/* =================================================================== */
+
+function viewSetup(){
+  const b = parseInt(($("#su-base")||{}).value,10) || 10;
+  return `
+  <h2 style="font-family:var(--disp);font-size:27px;font-weight:700;letter-spacing:-.02em;margin:8px 0 8px">
+    Four weeks. One trigger at a time.</h2>
+  <p style="font-size:14.5px;color:var(--dim);line-height:1.6;margin:0 0 22px">
+    The target steps down each week and day 28 is quit day. Nothing in here can be
+    reset by a bad day.</p>
+
+  <label class="note" style="margin:0 0 6px;display:block">Cigarettes on a normal day right now</label>
+  <input id="su-base" inputmode="numeric" value="10" style="margin-bottom:16px">
+
+  <div class="weeks" id="su-weeks" style="margin-bottom:22px"></div>
+
+  <label class="note" style="margin:0 0 6px;display:block">Price of a pack</label>
+  <input id="su-price" inputmode="decimal" value="12" style="margin-bottom:14px">
+  <label class="note" style="margin:0 0 6px;display:block">Cigarettes per pack</label>
+  <input id="su-per" inputmode="numeric" value="20" style="margin-bottom:14px">
+  <label class="note" style="margin:0 0 6px;display:block">Currency symbol</label>
+  <input id="su-cur" value="€" style="margin-bottom:14px">
+  <label class="note" style="margin:0 0 6px;display:block">What the saved money buys</label>
+  <input id="su-goal" placeholder="Something specific" style="margin-bottom:22px">
+
+  <button class="go" data-a="setup-done">Start today</button>`;
+}
+
+function viewToday(){
+  const s = stats();
+  const remaining = s.allowance != null ? s.allowance - s.todaySmoked : null;
+  const since = fmtSince(s.lastSmoke ? Date.now() - s.lastSmoke : null);
+  const dateLabel = new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"});
+
+  const last = S.entries.find(e => e.id === S.lastId);
+  const showTag = last && !last.trigger && (Date.now() - last.ts < 30*60000);
+  const showUndo = last && (Date.now() - last.ts < 3*60000);
+
+  let hours = s.todayEntries.map(e => new Date(e.ts).getHours());
+  const lo = Math.min.apply(null,[7].concat(hours)), hi = Math.max.apply(null,[22].concat(hours));
+
+  return `
+  <div class="hud">
+    <div class="hud-top"><span>DAY ${s.dayIndex+1} / 28</span><span><b>LVL ${s.level}</b></span></div>
+    <div class="since mono" id="since">${since.n}<small> ${since.u}</small></div>
+    <div class="since-label">${s.lastSmoke ? "since the last one" : "nothing logged yet"}</div>
+    <div class="xp"><i style="width:${(s.intoLevel/XP_PER_LEVEL*100).toFixed(1)}%"></i></div>
+    <div class="xp-row"><span>${s.points} XP</span><span>${XP_PER_LEVEL - s.intoLevel} TO LVL ${s.level+1}</span></div>
+  </div>
+
+  <div class="acts">
+    <button class="act a-break" data-a="break"><span class="ic">◆</span><span class="tx">
+      <b>Take a break</b><span>Keep the walk, drop the cigarette</span></span></button>
+    <button class="act a-crave" data-a="crave"><span class="ic">◈</span><span class="tx">
+      <b>Craving — start 10 min</b><span>For the ones that arrive out of nowhere</span></span></button>
+    <button class="act a-smoke" data-a="smoke"><span class="ic">●</span><span class="tx">
+      <b>Smoked one</b><span>One tap. Tag it after, or don't.</span></span></button>
+  </div>
+
+  ${showTag ? `<div class="tagbar">
+    <div class="th"><span>What prompted that one?</span>
+      ${showUndo ? `<button class="link" data-a="undo">Undo</button>` : ``}</div>
+    <div class="chips">${sortedTriggers().slice(0,8).map(t =>
+      `<button class="chip sm" data-a="tag" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+  </div>` : (showUndo ? `<div class="tagbar"><div class="th"><span>Logged.</span>
+      <button class="link" data-a="undo">Undo</button></div></div>` : ``)}
+
+  <div class="stats">
+    <div class="stat ${remaining != null && remaining < 0 ? "warn":""}">
+      <b class="mono">${s.todaySmoked}${s.allowance!=null?`<span style="font-size:14px;color:var(--dim)"> / ${s.allowance}</span>`:``}</b>
+      <small>today vs target</small></div>
+    <div class="stat"><b class="mono">${s.todayBreaks + s.todayResisted}</b><small>swapped today</small></div>
+    <div class="stat"><b class="mono">${S.currency}${s.money.toFixed(2)}</b>
+      <small>${S.goal ? esc(S.goal) : "banked"}</small></div>
+  </div>
+
+  ${S.patchOn ? `<div class="panel">
+    <div class="prow"><span class="lbl">Patch on today
+      <small>${S.patchStrength ? esc(S.patchStrength)+" · " : ""}${s.patchCount} day${s.patchCount===1?"":"s"} worn</small></span>
+      <button class="tog" data-on="${S.patchDays[s.today]?1:0}" data-a="patch">${S.patchDays[s.today]?"On":"Not yet"}</button></div>
+    <div class="prow"><span class="lbl">Lozenge / gum / spray<small>For the spikes the patch misses</small></span>
+      <span class="stepper"><button data-a="fast" data-d="-1">−</button>
+      <b class="mono">${S.fastActing[s.today]||0}</b>
+      <button data-a="fast" data-d="1">+</button></span></div>
+  </div>` : ``}
+
+  <h4 class="sec">THE TAPER</h4>
+  <div class="weeks">${[0,1,2,3].map(w =>
+    `<div class="wk" data-on="${Math.floor(s.dayIndex/7)===w?1:0}">
+      <b class="mono">${allowanceFor(w*7,s.baseline)}</b><small>wk ${w+1}</small></div>`).join("")}
+    <div class="wk" data-on="${s.dayIndex>=QUIT_DAY?1:0}"><b class="mono">0</b><small>day 28</small></div>
+  </div>
+
+  <h4 class="sec">TODAY, HOUR BY HOUR</h4>
+  ${s.todayEntries.length === 0
+    ? `<div class="empty">Nothing yet today. One tap is all it takes — the tagging is optional.</div>`
+    : `<div class="thread">${Array.from({length:hi-lo+1},(_,i)=>lo+i).map(h =>
+        `<div class="trow"><span class="h">${String(h).padStart(2,"0")}</span><div class="track">
+        ${s.todayEntries.filter(e=>new Date(e.ts).getHours()===h).map(e =>
+          `<span class="mk ${e.type==="smoke"?"s":e.type==="break"?"b":"r"}"
+            style="left:${(new Date(e.ts).getMinutes()/60*100).toFixed(1)}%"
+            title="${esc(e.trigger||"Untagged")}"></span>`).join("")}
+        </div></div>`).join("")}</div>`}
+
+  <div class="note">Quit day is ${s.quitDate.toLocaleDateString(undefined,{day:"numeric",month:"long"})}.
+    Multiplier ×${s.mult.toFixed(2)} from ${s.loggedDays} day${s.loggedDays===1?"":"s"} on the record — that only ever goes up.</div>`;
+}
+
+function viewPatterns(){
+  const s = stats();
+  const rows = Object.keys(s.trig).map(k=>[k,s.trig[k]]).sort((a,b)=>b[1]-a[1]);
+  const maxT = Math.max(1, ...rows.map(r=>r[1]));
+  const maxH = Math.max(1, ...s.hours);
+
+  return `
+  <div class="hud" style="padding-bottom:16px">
+    <div class="hud-top"><span>PATTERNS</span><span><b>${s.smokes} SMOKED</b></span></div>
+    <div class="stats" style="margin:14px 0 0">
+      <div class="stat" style="background:var(--panel2)"><b class="mono">${s.smokes}</b><small>smoked</small></div>
+      <div class="stat" style="background:var(--panel2)"><b class="mono" style="color:var(--violet)">${s.breaks}</b><small>breaks swapped</small></div>
+      <div class="stat" style="background:var(--panel2)"><b class="mono" style="color:var(--mint)">${s.resisted}</b><small>ridden out</small></div>
+    </div>
+  </div>
+
+  ${rows.length === 0 && s.breaks === 0
+    ? `<div class="empty">Nothing to read yet. Tag a few entries and your triggers show up here on their own.</div>`
+    : `<h4 class="sec">BY TRIGGER — SMOKED vs SWAPPED</h4>
+       ${rows.map(([t,n]) => `
+         <div class="bar"><span>${esc(t)}</span><i style="width:${(n/maxT*100).toFixed(1)}%"></i><u>${n}</u></div>
+         ${s.swap[t] ? `<div class="bar" style="margin-top:-3px"><span></span>
+           <i class="sw" style="width:${(s.swap[t]/maxT*100).toFixed(1)}%"></i><u>${s.swap[t]}</u></div>` : ``}`).join("")}
+
+       <h4 class="sec">BY HOUR</h4>
+       <div class="hrs">${s.hours.map((n,i)=>`<div style="height:${(n/maxH*100).toFixed(1)}%" title="${i}:00 — ${n}"></div>`).join("")}</div>
+       <div class="hlab"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+
+       ${s.smokes >= 12 && rows.length ? `<div class="note">Heaviest trigger is
+         <b style="color:var(--text)">${esc(rows[0][0])}</b> at ${rows[0][1]} of ${s.smokes}.
+         The violet bar under it is how often you swapped that one instead. Get that bar taller
+         before you touch any other trigger.</div>` : ``}`}`;
+}
+
+function viewLog(){
+  const s = stats();
+  const rows = S.entries.slice().sort((a,b)=>b.ts-a.ts).slice(0,120);
+  return `
+  <div class="hud" style="padding-bottom:16px">
+    <div class="hud-top"><span>LOG</span><span><b>${s.loggedDays} DAYS ON RECORD</b></span></div>
+    <div class="since-label" style="margin:12px 0 0">Tap an untagged entry to label it whenever you feel like it.</div>
+  </div>
+  ${rows.length === 0 ? `<div class="empty">Your entries will appear here.</div>` :
+   rows.map(e => `<div class="lrow">
+     <span><span class="dot" style="background:${e.type==="smoke"?"var(--smoke)":e.type==="break"?"var(--violet)":"var(--mint)"};
+       border-radius:${e.type==="break"?"2px":"50%"}"></span>
+       ${e.trigger ? esc(e.trigger) : `<button class="link" data-a="opentag" data-id="${e.id}">Untagged — add one</button>`}
+       <span style="color:var(--dim)"> · ${e.type==="break"?(e.challenge?"break + challenge":"break"):e.type==="resisted"?"rode it out":"smoked"}</span>
+     </span><time>${new Date(e.ts).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</time>
+   </div>`).join("")}`;
+}
+
+function viewSettings(){
+  const s = stats();
+  return `
+  <div class="hud" style="padding-bottom:16px">
+    <div class="hud-top"><span>SETTINGS</span></div>
+    <div class="since-label" style="margin:12px 0 0">Everything here is editable at any time.</div>
+  </div>
+
+  <h4 class="sec">YOUR TRIGGERS</h4>
+  ${S.triggers.map(t=>`<div class="erow"><span>${esc(t)}</span>
+    <button data-a="deltrig" data-t="${esc(t)}" aria-label="Remove">×</button></div>`).join("")}
+  <div class="addrow"><input id="in-trig" placeholder="In your own words">
+    <button data-a="addtrig">Add</button></div>
+
+  <h4 class="sec">CHALLENGE DECKS</h4>
+  <div class="panel">${Object.keys(DECKS).map(k=>`<div class="prow">
+    <span class="lbl">${DECKS[k]}</span>
+    <button class="tog" data-on="${S.decks[k]!==false?1:0}" data-a="deck" data-k="${k}">${S.decks[k]!==false?"On":"Off"}</button>
+  </div>`).join("")}</div>
+
+  <h4 class="sec">YOUR OWN CHALLENGES</h4>
+  ${S.customChallenges.length===0 ? `<div class="empty">Anything you add lands in the 5-minute desk deck.
+    Add the ones you'll actually start.</div>` : ``}
+  ${S.customChallenges.map(c=>`<div class="erow"><span>${esc(c.text)}</span>
+    <button data-a="delch" data-id="${c.id}" aria-label="Remove">×</button></div>`).join("")}
+  <div class="addrow"><input id="in-ch" placeholder="Startable in ten seconds">
+    <button data-a="addch">Add</button></div>
+
+  <h4 class="sec">THE PLAN</h4>
+  <label class="note" style="margin:0 0 6px;display:block">Cigarettes a day before starting</label>
+  <input data-f="baseline" inputmode="numeric" value="${S.baseline}" style="margin-bottom:12px">
+  <label class="note" style="margin:0 0 6px;display:block">Price of a pack</label>
+  <input data-f="pricePerPack" inputmode="decimal" value="${S.pricePerPack}" style="margin-bottom:12px">
+  <label class="note" style="margin:0 0 6px;display:block">Cigarettes per pack</label>
+  <input data-f="cigsPerPack" inputmode="numeric" value="${S.cigsPerPack}" style="margin-bottom:12px">
+  <label class="note" style="margin:0 0 6px;display:block">What the saved money buys</label>
+  <input data-f="goal" value="${esc(S.goal)}" style="margin-bottom:12px">
+
+  <h4 class="sec">PATCH</h4>
+  <div class="panel"><div class="prow"><span class="lbl">Track a patch</span>
+    <button class="tog" data-on="${S.patchOn?1:0}" data-a="patchon">${S.patchOn?"On":"Off"}</button></div></div>
+  ${S.patchOn?`<label class="note" style="margin:0 0 6px;display:block">Strength</label>
+    <input data-f="patchStrength" value="${esc(S.patchStrength)}" placeholder="e.g. 21 mg">`:``}
+
+  <h4 class="sec">BACKUP</h4>
+  <div class="note" style="margin-top:0">Copy this somewhere safe before any rebuild. Pasting it back
+    restores everything — ${s.loggedDays} day${s.loggedDays===1?"":"s"}, ${S.entries.length} entries.</div>
+  <textarea id="ex" readonly style="margin-top:10px">${esc(JSON.stringify(S))}</textarea>
+  <div class="addrow"><button data-a="copy" style="flex:1">Copy backup</button>
+    <button data-a="download" style="flex:1">Download .json</button></div>
+  <div style="height:14px"></div>
+  <textarea id="im" placeholder="Paste a backup here to restore it"></textarea>
+  <div class="addrow"><button data-a="import" style="flex:1">Restore from backup</button></div>
+
+  <div class="note">Started ${S.startDate}. Targets step ${STEPS.map(x=>Math.round(x*100)+"%").join(" → ")}
+    of baseline, then zero on day 28.</div>`;
+}
+
+/* ---- overlays ---- */
+
+function viewBreak(){
+  const o = over;
+  return `<div class="veil" data-a="closeover"><div class="sheet" data-stop="1">
+    <h3>${o.mins} minutes${o.place==="home"?" at home":""}</h3>
+    <p class="sub">Start it before you talk yourself out of it.</p>
+    ${o.card ? `<div class="card"><small>${(DECKS[o.card.deck]||"CHALLENGE").toUpperCase()}</small>
+      <b>${esc(o.card.text)}</b></div>`
+      : `<div class="empty" style="margin-bottom:16px">Nothing fits that slot. Turn more decks on
+        in Settings, or add your own.</div>`}
+
+    <div class="chips" style="margin-bottom:10px">
+      ${[2,5,15,30].map(m=>`<button class="chip sm" data-on="${o.mins===m?1:0}" data-a="bmins" data-m="${m}">${m} min</button>`).join("")}
+    </div>
+    <div class="chips" style="margin-bottom:18px">
+      ${[["desk","At my desk"],["home","At home"]].map(p=>
+        `<button class="chip sm" data-on="${o.place===p[0]?1:0}" data-a="bplace" data-p="${p[0]}">${p[1]}</button>`).join("")}
+    </div>
+
+    <button class="go" data-a="bdone">Done — no cigarette</button>
+    <button class="go ghost" data-a="breroll">Deal a different one</button>
+    <button class="quiet" data-a="bskip">Just log the break, no challenge</button>
+  </div></div>`;
+}
+
+function viewCrave(){
+  const CR = 10*60000;
+  const left = Math.max(0, CR - (Date.now() - S.craving.startTs));
+  const done = left === 0;
+  const R = 86, C = 2*Math.PI*R;
+  const mm = Math.floor(left/60000), ss = Math.floor((left%60000)/1000);
+  return `<div class="crave">
+    <div class="ring">
+      <svg width="206" height="206" viewBox="0 0 206 206">
+        <circle cx="103" cy="103" r="${R}" fill="none" stroke="#2E3350" stroke-width="7"/>
+        <circle class="prog" cx="103" cy="103" r="${R}" fill="none"
+          stroke="${done?"#4FD1A0":"#F2A93B"}" stroke-width="7" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${C*(1-left/CR)}"
+          transform="rotate(-90 103 103)"/>
+      </svg>
+      <div class="num" id="cnum">${done?"0:00":mm+":"+String(ss).padStart(2,"0")}</div>
+    </div>
+    <p>${done ? "Ten minutes. The peak has passed — this is the part you were never getting to."
+      : "Cravings climb for about three minutes, then fall on their own. You don't have to do anything but wait."}</p>
+    <div class="btns">
+      <button class="go" data-a="crode">I rode it out</button>
+      <button class="quiet" data-a="csmoked">I smoked — log it</button>
+      <button class="quiet" data-a="cclose">Put it away, keep it running</button>
+      <button class="quiet" data-a="ccancel">Cancel the timer</button>
+    </div>
+  </div>`;
+}
+
+/* =================================================================== */
+/*  Render                                                             */
+/* =================================================================== */
+
+function render(){
+  const app = $("app");
+  if(!S){ app.innerHTML = `<div class="note" style="padding-top:40px">Loading…</div>`; return; }
+
+  if(!S.setup){
+    app.innerHTML = viewSetup();
+    $("nav").innerHTML = "";
+    $("over").innerHTML = "";
+    refreshSetupWeeks();
+    return;
+  }
+
+  app.innerHTML = tab==="today" ? viewToday()
+    : tab==="log" ? viewLog()
+    : tab==="patterns" ? viewPatterns() : viewSettings();
+
+  $("nav").innerHTML = [["today","TODAY"],["log","LOG"],["patterns","PATTERNS"],["settings","SETTINGS"]]
+    .map(t=>`<button data-on="${tab===t[0]?1:0}" data-a="tab" data-t="${t[0]}">${t[1]}</button>`).join("");
+
+  let ov = "";
+  if(S.craving && over && over.kind === "crave") ov = viewCrave();
+  else if(over && over.kind === "break") ov = viewBreak();
+  else if(S.craving) ov = `<div class="banner"><button data-a="reopen">
+      <span>CRAVING TIMER RUNNING</span><span id="bnum" class="mono">${
+        (()=>{const l=Math.max(0,600000-(Date.now()-S.craving.startTs));
+          return Math.floor(l/60000)+":"+String(Math.floor((l%60000)/1000)).padStart(2,"0");})()}</span></button></div>`;
+  if(toastMsg) ov += `<div class="toast">${esc(toastMsg)}</div>`;
+  $("over").innerHTML = ov;
+}
+
+function refreshSetupWeeks(){
+  const el = document.querySelector("#su-weeks");
+  if(!el) return;
+  const b = parseInt((document.querySelector("#su-base")||{}).value,10) || 10;
+  el.innerHTML = [0,1,2,3].map(w=>`<div class="wk"><b class="mono">${allowanceFor(w*7,b)}</b>
+    <small>wk ${w+1}</small></div>`).join("") + `<div class="wk"><b class="mono">0</b><small>day 28</small></div>`;
+}
+
+/* live tick — updates only the numbers, so it never steals input focus */
+setInterval(() => {
+  if(!S || !S.setup) return;
+  const el = document.querySelector("#since");
+  if(el && tab === "today"){
+    const s = stats();
+    const f = fmtSince(s.lastSmoke ? Date.now()-s.lastSmoke : null);
+    el.innerHTML = f.n + `<small> ${f.u}</small>`;
+  }
+  if(S.craving){
+    const l = Math.max(0, 600000 - (Date.now() - S.craving.startTs));
+    const txt = Math.floor(l/60000)+":"+String(Math.floor((l%60000)/1000)).padStart(2,"0");
+    const c = document.querySelector("#cnum"), b = document.querySelector("#bnum");
+    if(c) { if(c.textContent !== txt){ c.textContent = txt; if(l===0) render(); } }
+    else if(b) b.textContent = txt;
+  }
+}, 1000);
+
+/* =================================================================== */
+/*  Events                                                             */
+/* =================================================================== */
+
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-a]");
+  if(!t){ return; }
+  const a = t.dataset.a;
+
+  if(a === "closeover" && ev.target.closest("[data-stop]")) return;
+
+  switch(a){
+    case "setup-done": {
+      const g = (id, d) => { const el = document.querySelector(id); return el ? el.value : d; };
+      S = Object.assign({}, BLANK, {
+        setup:true, startDate:dayKey(Date.now()),
+        baseline: parseInt(g("#su-base","10"),10) || 10,
+        pricePerPack: parseFloat(g("#su-price","12")) || 12,
+        cigsPerPack: parseInt(g("#su-per","20"),10) || 20,
+        currency: g("#su-cur","€") || "€",
+        goal: (g("#su-goal","")||"").trim()
+      });
+      save(); break;
+    }
+
+    case "tab": tab = t.dataset.t; over = null; break;
+
+    case "smoke": addEntry("smoke"); toast("+5 XP · logged"); return;
+    case "undo": {
+      const i = S.entries.findIndex(e => e.id === S.lastId);
+      if(i > -1){ S.entries.splice(i,1); S.lastId = null; save(); }
+      break;
+    }
+    case "tag": {
+      const e = S.entries.find(x => x.id === S.lastId);
+      if(e){ e.trigger = t.dataset.t; save(); }
+      break;
+    }
+    case "opentag": {
+      const e = S.entries.find(x => x.id === t.dataset.id);
+      if(e){ S.lastId = e.id; tab = "today"; save(); }
+      break;
+    }
+
+    case "break": over = {kind:"break", mins:5, place:"desk", card:deal(5,"desk",S.recent)}; break;
+    case "bmins": over.mins = +t.dataset.m; over.card = deal(over.mins, over.place, S.recent); break;
+    case "bplace": over.place = t.dataset.p; over.card = deal(over.mins, over.place, S.recent); break;
+    case "breroll": over.card = deal(over.mins, over.place, (over.card?[over.card.id]:[]).concat(S.recent)); break;
+    case "bdone": {
+      const hadCard = !!over.card;
+      addEntry("break", {challenge: hadCard ? over.card.id : null});
+      over = null;
+      toast(hadCard ? "+45 XP · swapped" : "+30 XP · break taken");
+      return;
+    }
+    case "bskip": addEntry("break"); over = null; toast("+30 XP · break taken"); return;
+    case "closeover": over = null; break;
+
+    case "crave": S.craving = {startTs: Date.now()}; over = {kind:"crave"}; save(); break;
+    case "reopen": over = {kind:"crave"}; break;
+    case "cclose": over = null; break;
+    case "crode": addEntry("resisted"); S.craving = null; over = null; save(); toast("+50 XP · rode it out"); return;
+    case "csmoked": addEntry("smoke"); S.craving = null; over = null; save(); toast("+5 XP · logged"); return;
+    case "ccancel": S.craving = null; over = null; save(); break;
+
+    case "patch": { const k = dayKey(Date.now());
+      S.patchDays[k] = !S.patchDays[k]; save(); break; }
+    case "fast": { const k = dayKey(Date.now());
+      S.fastActing[k] = Math.max(0, (S.fastActing[k]||0) + (+t.dataset.d)); save(); break; }
+    case "patchon": S.patchOn = !S.patchOn; save(); break;
+
+    case "deck": { const k = t.dataset.k; S.decks[k] = S.decks[k] === false; save(); break; }
+    case "deltrig": S.triggers = S.triggers.filter(x => x !== t.dataset.t); save(); break;
+    case "addtrig": { const el = document.querySelector("#in-trig");
+      if(el && el.value.trim()){ S.triggers.push(el.value.trim()); save(); } break; }
+    case "delch": S.customChallenges = S.customChallenges.filter(c => c.id !== t.dataset.id); save(); break;
+    case "addch": { const el = document.querySelector("#in-ch");
+      if(el && el.value.trim()){
+        S.customChallenges.push({id:"c"+Date.now(), deck:"reset", mins:5, place:"desk", text:el.value.trim()});
+        save(); } break; }
+
+    case "copy": { const el = document.querySelector("#ex");
+      el.select(); try{ document.execCommand("copy"); toast("Backup copied"); }catch(e){ toast("Select and copy"); }
+      return; }
+    case "download": { try{
+        const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+        const a2 = document.createElement("a");
+        a2.href = URL.createObjectURL(blob);
+        a2.download = "quit-backup-"+dayKey(Date.now())+".json";
+        a2.click(); URL.revokeObjectURL(a2.href);
+      }catch(e){ toast("Copy the text instead"); } return; }
+    case "import": { const el = document.querySelector("#im");
+      try{
+        const parsed = JSON.parse(el.value);
+        if(!parsed || !Array.isArray(parsed.entries)) throw new Error("bad");
+        S = Object.assign({}, BLANK, parsed);
+        save(); toast("Restored " + S.entries.length + " entries");
+      }catch(e){ toast("That doesn't look like a backup"); }
+      break; }
+  }
+  render();
+});
+
+/* setup preview + settings fields, without re-rendering under the cursor */
+document.addEventListener("input", (ev) => {
+  if(ev.target.id === "su-base") refreshSetupWeeks();
+});
+document.addEventListener("change", (ev) => {
+  const f = ev.target.dataset ? ev.target.dataset.f : null;
+  if(!f || !S) return;
+  const v = ev.target.value;
+  if(f === "baseline") S.baseline = parseInt(v,10) || 0;
+  else if(f === "pricePerPack") S.pricePerPack = parseFloat(v) || 0;
+  else if(f === "cigsPerPack") S.cigsPerPack = parseInt(v,10) || 20;
+  else S[f] = v;
+  save();
+});
+
+/* =================================================================== */
+
+(async function init(){
+  const loaded = await store.get();
+  S = loaded ? Object.assign({}, BLANK, loaded) : Object.assign({}, BLANK);
+  if(S.craving) over = null;
+  render();
+})();
+</script>
